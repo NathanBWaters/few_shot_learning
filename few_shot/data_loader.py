@@ -1,8 +1,6 @@
-import tensorflow as tf
+#!/usr/bin/env python3
 import numpy as np
 import random
-
-BATCH_SIZE = 64
 
 
 def make_pairs_batch(features, labels, batch_size):
@@ -11,22 +9,24 @@ def make_pairs_batch(features, labels, batch_size):
     not matching pairs
     '''
     num_classes = max(labels) + 1
-    digit_indices = [np.where(y == i)[0] for i in range(num_classes)]
+    digit_indices = [np.where(labels == i)[0] for i in range(num_classes)]
 
     pairs = []
     pair_labels = []
 
-    for i in range(batch_size):
+    for i in range(batch_size // 2):
         # select a random feature
         index = random.randint(0, len(features) - 1)
 
         # adding a matching example
         original_feature = features[index]
-        feature_label = y[index]
-        matching_index = random.choice(digit_indices[feature_label])
-        matching_feature = features[matching_index]
+        feature_label = labels[index]
 
-        pairs.append([original_feature, matching_feature])
+        # get a sample from the same class
+        same_class_index = random.choice(digit_indices[feature_label])
+        same_class_feature = features[same_class_index]
+
+        pairs.append([original_feature, same_class_feature])
         pair_labels.append(1)
 
         # adding a non-matching example
@@ -34,19 +34,25 @@ def make_pairs_batch(features, labels, batch_size):
         while feature_label == non_matching_label:
             non_matching_label = random.randint(0, num_classes - 1)
 
+        # get a sample from a different class
         non_matching_feature = features[random.choice(
             digit_indices[non_matching_label])]
 
         pairs.append([original_feature, non_matching_feature])
         pair_labels.append(0)
 
-    return np.array(pairs), np.array(pair_labels)
+    pairs = np.array(pairs)
+    # import pdb; pdb.set_trace()
+    return [pairs[:, 0], pairs[:, 1]], np.array(pair_labels)
 
 
-def data_generator(data_features, data_labels, batch_size=BATCH_SIZE):
+def data_generator(data_features, data_labels, batch_size):
+    '''
+    Generator that yields a batch
+    '''
     while True:
         features, labels = make_pairs_batch(data_features,
                                             data_labels,
                                             batch_size)
 
-        return features, labels
+        yield features, labels

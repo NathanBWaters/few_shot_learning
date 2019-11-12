@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 import keras.backend as keras_backend
-from keras.models import Sequential, Model
+from keras.models import Model
 from keras.layers import (
     Dense,
     Lambda,
@@ -22,52 +23,50 @@ def euclidean_distance(vects):
         keras_backend.maximum(sum_square, keras_backend.epsilon()))
 
 
-def get_siamese_branch(input_shape):
+def get_shared_encoder(input_shape):
     '''
     Return the siamese branch
     '''
-    branch = Sequential(input_shape=input_shape)
-    branch.add(
-        Convolution2D(32,
+    input_layer = Input(shape=input_shape)
+    x = Convolution2D(32,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
-                      kernel_regularizer=l2(0.001)))
-    branch.add(BatchNormalization())
-    branch.add(
-        Convolution2D(32,
+                      kernel_regularizer=l2(0.001))(input_layer)
+    x = BatchNormalization()(x)
+    x = Convolution2D(32,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
-                      kernel_regularizer=l2(0.001)))
-    branch.add(BatchNormalization())
-    branch.add(
-        Convolution2D(64,
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(64,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
-                      kernel_regularizer=l2(0.001)))
-    branch.add(BatchNormalization())
-    branch.add(
-        Convolution2D(64,
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(64,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
-                      kernel_regularizer=l2(0.001)))
-    branch.add(BatchNormalization())
-
-    return branch
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    return Model(input=input_layer, outputs=x)
 
 
-def get_model(input_shape):
+def get_simple_cnn(input_shape):
     '''
     Returns the CNN model
     '''
     input_a = Input(shape=input_shape)
     input_b = Input(shape=input_shape)
 
-    encoded_a = get_siamese_branch(input_a)
-    encoded_b = get_siamese_branch(input_b)
+    # instatiating the model so that it becomes shared weights
+    shared_cnn_encoder = get_shared_encoder(input_shape)
+
+    encoded_a = shared_cnn_encoder(input_a)
+    encoded_b = shared_cnn_encoder(input_b)
 
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
     output_layer = Dense(1, activation="sigmoid")(merge_layer)
