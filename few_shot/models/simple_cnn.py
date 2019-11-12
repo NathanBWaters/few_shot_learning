@@ -5,6 +5,7 @@ from keras.layers import (
     Dense,
     Lambda,
     Input,
+    Flatten,
     Convolution2D,
     BatchNormalization,
 )
@@ -69,6 +70,7 @@ def get_simple_cnn(input_shape):
     encoded_b = shared_cnn_encoder(input_b)
 
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
+    merge_layer = Flatten()(merge_layer)
     output_layer = Dense(1, activation="sigmoid")(merge_layer)
     model = Model(inputs=[input_a, input_b], outputs=output_layer)
 

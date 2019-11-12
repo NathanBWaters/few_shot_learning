@@ -5,14 +5,17 @@ from keras.optimizers import Adam, SGD
 import os
 import wandb
 from wandb.keras import WandbCallback
+from sklearn.model_selection import train_test_split
 
 from few_shot.data_loader import data_generator
 from few_shot.models.simple_cnn import get_simple_cnn
-
+from few_shot.utils import recall, precision, f1
 
 BATCH_SIZE = 64
 IMAGE_SIZE = (28, 28, 1)
 CWD = os.path.dirname(os.path.realpath(__file__))
+CHECKPOINTS_DIR = os.path.join(CWD, 'model_checkpoints')
+os.mkdirs(CHECKPOINTS_DIR, exist_ok=True)
 
 
 def train():
@@ -20,13 +23,16 @@ def train():
     Trains the model
     '''
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    training_generator = data_generator(x_train, y_train, BATCH_SIZE)
-    validation_generator = data_generator(x_test, y_test, BATCH_SIZE)
-    # test_generator = data_generator(x_test, y_test)
+    x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=0.5)
 
-    num_training_samples = len(y_train)
-    num_validation_samples = len(x_test)
+    training_generator = data_generator(x_train, y_train, BATCH_SIZE, IMAGE_SIZE)
+    validation_generator = data_generator(x_val, y_val, BATCH_SIZE, IMAGE_SIZE)
+    # test_generator = data_generator(x_test, y_test, BATCH_SIZE, IMAGE_SIZE)
 
+    num_training_samples = len(x_train)
+    num_validation_samples = len(x_val)
+
+    model_name = 'mnist_simple_cnn'
     wandb.init(name='mnist_simple_cnn', project='few_shot')
     callbacks = [
         ReduceLROnPlateau(
@@ -39,17 +45,19 @@ def train():
             cooldown=0,
             min_lr=0.000001),
         WandbCallback(),
-        ModelCheckpoint(os.path.join(CWD, 'models/basic_cnn_{epoch}.h5'),
-                        period=1)
+        ModelCheckpoint(
+            os.path.join(CHECKPOINTS_DIR, model_name + '_{epoch}.h5'), period=1)
     ]
 
     model = get_simple_cnn(IMAGE_SIZE)
 
     model.summary()
 
-    # opt = Adam(lr=1.0e-5)
+    opt = Adam(lr=1.0e-5)
     opt = SGD(lr=0.005, clipvalue=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt)
+    model.compile(loss='binary_crossentropy',
+                  optimizer=opt,
+                  metrics=['acc', f1, precision, recall])
 
     model.fit_generator(
         generator=training_generator,
@@ -59,9 +67,6 @@ def train():
         callbacks=callbacks,
         validation_data=validation_generator,
         validation_steps=int(num_validation_samples // BATCH_SIZE),
-        workers=8,
-        max_queue_size=250,
-        use_multiprocessing=False,
         shuffle=True
     )
 

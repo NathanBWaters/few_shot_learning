@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 
-def make_pairs_batch(features, labels, batch_size):
+def make_pairs_batch(features, labels, batch_size, image_shape):
     '''
     Given the features and labels of a dataset, return a batch of matching and
     not matching pairs
@@ -42,17 +42,19 @@ def make_pairs_batch(features, labels, batch_size):
         pair_labels.append(0)
 
     pairs = np.array(pairs)
-    # import pdb; pdb.set_trace()
+    pairs = pairs.reshape(pairs.shape[0], 2, image_shape[0], image_shape[1], image_shape[2])
+
     return [pairs[:, 0], pairs[:, 1]], np.array(pair_labels)
 
 
-def data_generator(data_features, data_labels, batch_size):
+def data_generator(data_features, data_labels, batch_size, image_shape):
     '''
     Generator that yields a batch
     '''
     while True:
         features, labels = make_pairs_batch(data_features,
                                             data_labels,
-                                            batch_size)
+                                            batch_size,
+                                            image_shape)
 
         yield features, labels
