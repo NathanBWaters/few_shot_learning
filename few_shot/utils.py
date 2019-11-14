@@ -1,7 +1,7 @@
 '''
 Helpful utility functions
 '''
-from keras.backend import keras_backend
+from keras import backend as keras_backend
 
 
 def recall(y_true, y_pred):
@@ -33,8 +33,7 @@ def f1(y_true, y_pred):
     '''
     F1 score
     '''
-    precision = precision_m(y_true, y_pred)
-    recall = recall_m(y_true, y_pred)
-    return 2 * ((precision * recall) /
-                (precision + recall + keras_backend.epsilon()))
-
+    pre = precision(y_true, y_pred)
+    rec = recall(y_true, y_pred)
+    return 2 * ((pre * rec) /
+                (pre + rec + keras_backend.epsilon()))

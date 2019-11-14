@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 import numpy as np
 import random
+from PIL import Image
+
+
+def resize_mnist(image, image_shape):
+    '''
+    Resizes an mnist image so it will work with a pre-trained network
+    '''
+    image = np.stack((image, ) * 3, axis=-1)
+    return np.array(Image.fromarray(image).resize((image_shape[0], image_shape[1])))
 
 
 def make_pairs_batch(features, labels, batch_size, image_shape):
@@ -26,7 +35,8 @@ def make_pairs_batch(features, labels, batch_size, image_shape):
         same_class_index = random.choice(digit_indices[feature_label])
         same_class_feature = features[same_class_index]
 
-        pairs.append([original_feature, same_class_feature])
+        pairs.append([resize_mnist(original_feature, image_shape),
+                      resize_mnist(same_class_feature, image_shape)])
         pair_labels.append(1)
 
         # adding a non-matching example
@@ -38,16 +48,16 @@ def make_pairs_batch(features, labels, batch_size, image_shape):
         non_matching_feature = features[random.choice(
             digit_indices[non_matching_label])]
 
-        pairs.append([original_feature, non_matching_feature])
+        pairs.append([resize_mnist(original_feature, image_shape),
+                      resize_mnist(non_matching_feature, image_shape)])
         pair_labels.append(0)
 
     pairs = np.array(pairs)
-    pairs = pairs.reshape(pairs.shape[0], 2, image_shape[0], image_shape[1], image_shape[2])
 
     return [pairs[:, 0], pairs[:, 1]], np.array(pair_labels)
 
 
-def data_generator(data_features, data_labels, batch_size, image_shape):
+def mnist_data_generator(data_features, data_labels, batch_size, image_shape):
     '''
     Generator that yields a batch
     '''

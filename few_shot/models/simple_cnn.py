@@ -53,6 +53,18 @@ def get_shared_encoder(input_shape):
                       kernel_initializer='he_normal',
                       kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
+    x = Convolution2D(64,
+                      kernel_size=(3, 3),
+                      activation='relu',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(64,
+                      kernel_size=(3, 3),
+                      activation='relu',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
     return Model(input=input_layer, outputs=x)
 
 
@@ -71,7 +83,9 @@ def get_simple_cnn(input_shape):
 
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
     merge_layer = Flatten()(merge_layer)
-    output_layer = Dense(1, activation="sigmoid")(merge_layer)
-    model = Model(inputs=[input_a, input_b], outputs=output_layer)
+    x = Dense(100, activation="relu")(merge_layer)
+    x = Dense(25, activation="relu")(x)
+    x = Dense(1, activation="sigmoid")(x)
+    model = Model(inputs=[input_a, input_b], outputs=x)
 
     return model
