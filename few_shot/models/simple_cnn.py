@@ -8,6 +8,7 @@ from keras.layers import (
     Flatten,
     Convolution2D,
     BatchNormalization,
+    Dropout,
 )
 from keras.regularizers import l2
 
@@ -73,7 +74,9 @@ def get_simple_cnn(input_shape):
     Returns the CNN model
     '''
     input_a = Input(shape=input_shape)
+    # x = Dropout(0.1)(input_a)
     input_b = Input(shape=input_shape)
+    # y = Dropout(0.1)(input_b)
 
     # instatiating the model so that it becomes shared weights
     shared_cnn_encoder = get_shared_encoder(input_shape)
@@ -84,7 +87,9 @@ def get_simple_cnn(input_shape):
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
     merge_layer = Flatten()(merge_layer)
     x = Dense(100, activation="relu")(merge_layer)
+    # x = Dropout(0.4)(x)
     x = Dense(25, activation="relu")(x)
+    # x = Dropout(0.4)(x)
     x = Dense(1, activation="sigmoid")(x)
     model = Model(inputs=[input_a, input_b], outputs=x)
 
