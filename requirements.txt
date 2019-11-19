@@ -22,7 +22,6 @@ decorator==4.4.0
 defusedxml==0.6.0
 dnspython==1.16.0
 docker-pycreds==0.4.0
-docutils==0.15.2
 entrypoints==0.3
 enum-compat==0.0.3
 eventlet==0.25.0
@@ -90,8 +89,6 @@ python-dateutil==2.8.0
 python-engineio==3.9.3
 python-socketio==4.3.1
 pytz==2019.3
-pywin32==226
-pywinpty==0.5.5
 PyYAML==5.1.2
 pyzmq==18.1.0
 requests==2.22.0
@@ -110,7 +107,6 @@ subprocess32==3.5.4
 tensorboard==1.12.2
 tensorflow==1.12.0
 tensorflow-estimator==1.14.0
-tensorflow-gpu==1.10.0
 termcolor==1.1.0
 terminado==0.8.2
 testpath==0.4.2
