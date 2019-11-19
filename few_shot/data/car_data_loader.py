@@ -69,14 +69,46 @@ def mnist_data_generator(data_features, data_labels, batch_size, image_shape):
         yield features, labels
 
 
+class Car():
+    '''
+    Creates car instance
+    '''
+    def __init__(self, np_data, classnames, path):
+        self.filename = np_data[0][0]
+
+        self.lr_x = np_data[1][0][0]
+        self.lr_y = np_data[2][0][0]
+        self.ul_x = np_data[3][0][0]
+        self.ul_x = np_data[4][0][0]
+        self.class_id = np_data[5][0][0]
+        self.class_name = classnames[self.class_id]
+        self.path = path
+
+    def __repr__(self):
+        '''
+        String representation of the Car
+        '''
+        return '<Car {} | {} />'.format(self.class_id, self.filename)
+
+
+def np_to_cars(numpy_dataset, classnames, path):
+    '''
+    Converts the raw numpy array to Car instances
+    '''
+    cars = []
+    for sample in numpy_dataset['annotations'][0][:]:
+        car = Car(sample, classnames, path)
+        cars.append(car)
+
+    return cars
+
+
 def get_car_generators():
     '''
     Return the training and validation car generators
     '''
-    meta = loadmat(os.path.join(CWD, 'data\\car_devkit\\cars_annos.mat'))
-    import pdb; pdb.set_trace()
-    # train_annos = loadmat(devkit_path/'cars_train_annos.mat')
-    # test_annos = loadmat(devkit_path/'cars_test_annos.mat')
+    metadata = loadmat(os.path.join(CWD, 'data', 'car_data', 'cars_meta.mat'))
+    classnames = {i + 1: a[0] for i, a in enumerate(metadata['class_names'][0])}
 
-    labels = [c for c in meta['class_names'][0]]
-    labels = pd.DataFrame(labels, columns=['labels'])
+    car_data_raw = loadmat(os.path.join(CWD, 'data', 'car_data', 'cars_annos.mat'))
+    car_data = np_to_cars(car_data_raw, classnames, 'all')
