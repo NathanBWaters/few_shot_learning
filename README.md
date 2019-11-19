@@ -4,7 +4,7 @@ Apply Siamese networks to learn a similarity function.
 Achieved 99.8% on training and 99.1% on validation for MNIST
 
 
-MNIST Dataset Log:
+## MNIST Dataset Log:
 * Started with a simple CNN architecture, got around 95%
 * Tried a mobile net backend, which failed spectacularly.  This is probably for
   two reasons: image-net does not have black and white number data and the model
@@ -15,7 +15,7 @@ MNIST Dataset Log:
   http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf.  This
   brought the model up to 99% accuracy on MNIST
 
-Omniglot Dataset Log:
+## Omniglot Dataset Log:
 * Applied the simple CNN with binary_crossentropy, got about 74%
 * Contrastive loss brought the accuracy up to 86% training and 85% validation
 * Applying dropout and simple numpy fliplr / flipud brought the accuracy down
@@ -53,4 +53,5 @@ Omniglot Dataset Log:
   superior validation metrics than both DenseNet runs.  The validation score
   was far poorer in the 1e-4 than the 3e-4.  Humorously, after about 180 epochs
   in ended up doing slightly worse than my LeNet model.
+
 

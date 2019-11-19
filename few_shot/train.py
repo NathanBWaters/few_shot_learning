@@ -15,7 +15,7 @@ from few_shot.data.mnist_data_loader import mnist_data_generator
 from few_shot.models.siamese_model import get_siamese_model
 # from few_shot.models.pre_trained_cnn import get_pretrained_model
 from few_shot.utils import recall, precision, f1
-from few_shot.constants import CWD, CHECKPOINTS_DIR
+from few_shot.constants import CWD, CHECKPOINTS_DIR, DATA_DIR
 
 OMNIGLOT_SHAPE = (32, 32, 3)
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
@@ -54,6 +54,7 @@ def train(dataset, image_shape, batch_size):
     '''
     if dataset == 'cars':
         training_generator, validation_generator = get_car_generators()
+
     if dataset == 'mnist':
         (x_train, y_train), (x_test,
                              y_test) = tf.keras.datasets.mnist.load_data()
@@ -70,8 +71,8 @@ def train(dataset, image_shape, batch_size):
         num_validation_samples = len(x_val)
 
     if dataset == 'omniglot':
-        train_path = os.path.join(CWD, 'data/images_background')
-        validation_path = os.path.join(CWD, 'data/images_evaluation')
+        train_path = os.path.join(DATA_DIR, 'images_background')
+        validation_path = os.path.join(DATA_DIR, 'images_evaluation')
         training_generator = omni_data_generator(
             train_path,
             batch_size,
@@ -82,7 +83,7 @@ def train(dataset, image_shape, batch_size):
         num_training_samples = 450
         num_validation_samples = 300
 
-    model_name = '{}_densenet_2e-4'.format(dataset)
+    model_name = '{}_letnet_larger'.format(dataset)
     wandb.init(name=model_name, project='few_shot')
     callbacks = [
         ReduceLROnPlateau(monitor='val_loss',
@@ -99,11 +100,11 @@ def train(dataset, image_shape, batch_size):
                         period=5)
     ]
 
-    model = get_siamese_model(image_shape, encoder='dense')
+    model = get_siamese_model(image_shape, encoder='lenet')
 
     model.summary()
 
-    opt = Adam(lr=2.0e-4)
+    opt = Adam(lr=3.0e-4)
     # opt = SGD(lr=0.005, clipvalue=0.5)
     model.compile(loss=contrastive_loss,
                   optimizer=opt,

@@ -10,6 +10,7 @@ from keras.layers import (
     Convolution2D,
     BatchNormalization,
     Dropout,
+    MaxPooling2D,
 )
 from keras.regularizers import l2
 
@@ -53,25 +54,45 @@ def get_lenet_encoder(input_shape):
                       kernel_initializer='he_normal',
                       kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
-    x = Convolution2D(64,
+    x = Convolution2D(128,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
                       kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
-    x = Convolution2D(64,
+    x = Convolution2D(128,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
                       kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
-    x = Convolution2D(64,
+    x = Convolution2D(128,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
                       kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
-    x = Convolution2D(64,
+    x = MaxPooling2D()(x)
+
+    x = Convolution2D(128,
+                      kernel_size=(3, 3),
+                      activation='relu',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(256,
+                      kernel_size=(3, 3),
+                      activation='relu',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(256,
+                      kernel_size=(3, 3),
+                      activation='relu',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Convolution2D(256,
                       kernel_size=(3, 3),
                       activation='relu',
                       kernel_initializer='he_normal',
@@ -103,9 +124,9 @@ def get_siamese_model(input_shape, encoder='dense'):
 
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
     merge_layer = Flatten()(merge_layer)
-    x = Dense(100, activation="relu")(merge_layer)
+    x = Dense(512, activation="relu")(merge_layer)
     x = BatchNormalization()(x)
-    x = Dense(25, activation="relu")(x)
+    x = Dense(128, activation="relu")(x)
     x = BatchNormalization()(x)
     x = Dense(1, activation="sigmoid")(x)
     model = Model(inputs=[input_a, input_b], outputs=x)
