@@ -108,3 +108,10 @@ few_shot/**/*.h5
 few_shot/data/images_background/
 few_shot/data/images_evaluation/
 src/
+few_shot/data/car_devkit/
+few_shot/data/cars_test/
+few_shot/data/cars_train/
+few_shot/data/personal/
+few_shot/data/*.zip
+few_shot/data/*.tar
+few_shot/data/*.tgz

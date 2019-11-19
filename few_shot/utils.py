@@ -6,7 +6,7 @@ from keras import backend as keras_backend
 
 def recall(y_true, y_pred):
     '''
-    Recall metric
+    Recall metric.
     '''
     true_positives = keras_backend.sum(
         keras_backend.round(keras_backend.clip(y_true * y_pred, 0, 1)))

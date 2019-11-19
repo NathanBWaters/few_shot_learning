@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import keras.backend as keras_backend
+from keras.applications import DenseNet121
 from keras.models import Model
 from keras.layers import (
     Dense,
@@ -25,9 +26,19 @@ def euclidean_distance(vects):
         keras_backend.maximum(sum_square, keras_backend.epsilon()))
 
 
-def get_shared_encoder(input_shape):
+def get_dense_encoder(input_shape):
     '''
-    Return the siamese branch
+    Return the Dense architecture to represent the siamese branch
+    '''
+    model = DenseNet121(input_shape=input_shape, include_top=False)
+    for layer in model.layers:
+        layer.trainable = True
+    return model
+
+
+def get_lenet_encoder(input_shape):
+    '''
+    Return the LeNet architecture to represent the siamese branch
     '''
     input_layer = Input(shape=input_shape)
     x = Convolution2D(32,
@@ -69,7 +80,7 @@ def get_shared_encoder(input_shape):
     return Model(input=input_layer, outputs=x)
 
 
-def get_simple_cnn(input_shape):
+def get_siamese_model(input_shape, encoder='dense'):
     '''
     Returns the CNN model
     '''
@@ -79,7 +90,13 @@ def get_simple_cnn(input_shape):
     # y = Dropout(0.1)(input_b)
 
     # instatiating the model so that it becomes shared weights
-    shared_cnn_encoder = get_shared_encoder(input_shape)
+    if encoder == 'lenet':
+        shared_cnn_encoder = get_lenet_encoder(input_shape)
+    elif encoder == 'dense':
+        shared_cnn_encoder = get_dense_encoder(input_shape)
+    else:
+        raise Exception('Failed to specify a valid encoder with: {}'
+                        .format(encoder))
 
     encoded_a = shared_cnn_encoder(input_a)
     encoded_b = shared_cnn_encoder(input_b)
@@ -87,9 +104,9 @@ def get_simple_cnn(input_shape):
     merge_layer = Lambda(euclidean_distance)([encoded_a, encoded_b])
     merge_layer = Flatten()(merge_layer)
     x = Dense(100, activation="relu")(merge_layer)
-    # x = Dropout(0.4)(x)
+    x = BatchNormalization()(x)
     x = Dense(25, activation="relu")(x)
-    # x = Dropout(0.4)(x)
+    x = BatchNormalization()(x)
     x = Dense(1, activation="sigmoid")(x)
     model = Model(inputs=[input_a, input_b], outputs=x)
 

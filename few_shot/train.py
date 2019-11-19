@@ -9,20 +9,21 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from keras import backend as keras_backend
 
+from few_shot.data.car_data_loader import get_car_generators
 from few_shot.data.omniglot_data_loader import omni_data_generator
 from few_shot.data.mnist_data_loader import mnist_data_generator
-from few_shot.models.simple_cnn import get_simple_cnn
+from few_shot.models.siamese_model import get_siamese_model
 # from few_shot.models.pre_trained_cnn import get_pretrained_model
 from few_shot.utils import recall, precision, f1
+from few_shot.constants import CWD, CHECKPOINTS_DIR
 
+OMNIGLOT_SHAPE = (32, 32, 3)
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
-CWD = os.path.dirname(os.path.realpath(__file__))
-CHECKPOINTS_DIR = os.path.join(CWD, 'model_checkpoints')
-os.makedirs(CHECKPOINTS_DIR, exist_ok=True)
 
 
 def contrastive_loss(y_true, y_pred):
-    '''Contrastive loss from Hadsell-et-al.'06
+    '''
+    Contrastive loss from Hadsell-et-al.'06
     http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
     '''
     margin = 1
@@ -40,7 +41,8 @@ def compute_accuracy(y_true, y_pred):
 
 
 def acc(y_true, y_pred):
-    '''Compute classification accuracy with a fixed threshold on distances.
+    '''
+    Compute classification accuracy with a fixed threshold on distances.
     '''
     return keras_backend.mean(keras_backend.equal(
         y_true, keras_backend.cast(y_pred < 0.5, y_true.dtype)))
@@ -50,6 +52,8 @@ def train(dataset, image_shape, batch_size):
     '''
     Trains the model
     '''
+    if dataset == 'cars':
+        training_generator, validation_generator = get_car_generators()
     if dataset == 'mnist':
         (x_train, y_train), (x_test,
                              y_test) = tf.keras.datasets.mnist.load_data()
@@ -78,7 +82,7 @@ def train(dataset, image_shape, batch_size):
         num_training_samples = 450
         num_validation_samples = 300
 
-    model_name = '{}_dropout_data_augmentation'.format(dataset)
+    model_name = '{}_densenet_2e-4'.format(dataset)
     wandb.init(name=model_name, project='few_shot')
     callbacks = [
         ReduceLROnPlateau(monitor='val_loss',
@@ -95,12 +99,12 @@ def train(dataset, image_shape, batch_size):
                         period=5)
     ]
 
-    model = get_simple_cnn(image_shape)
+    model = get_siamese_model(image_shape, encoder='dense')
 
     model.summary()
 
-    # opt = Adam(lr=1.0e-5)
-    opt = SGD(lr=0.005, clipvalue=0.5)
+    opt = Adam(lr=2.0e-4)
+    # opt = SGD(lr=0.005, clipvalue=0.5)
     model.compile(loss=contrastive_loss,
                   optimizer=opt,
                   metrics=[acc, f1, precision, recall])
@@ -115,7 +119,9 @@ def train(dataset, image_shape, batch_size):
         validation_steps=int(num_validation_samples // batch_size),
         shuffle=True)
 
+    model.save(os.path.join('model_checkpoints', model_name))
+
 
 if __name__ == '__main__':
-    # train('mnist', (32, 32, 3), 64)
-    train('omniglot', (32, 32, 3), 48)
+    # train('mnist', (64, 64, 3), 64)
+    train('omniglot', OMNIGLOT_SHAPE, 48)
