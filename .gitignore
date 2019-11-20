@@ -118,3 +118,4 @@ few_shot/data/*.zip
 few_shot/data/*.tar
 few_shot/data/*.tgz
 model_checkpoints
+few_shot/data/anomaly_data_loader.py

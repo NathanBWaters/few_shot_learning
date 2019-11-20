@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import tensorflow as tf
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
-from keras.optimizers import Adam, SGD
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.optimizers import Adam, SGD
 import os
 import wandb
 from wandb.keras import WandbCallback
 from sklearn.model_selection import train_test_split
 import numpy as np
-from keras import backend as keras_backend
+from tensorflow.keras import backend as keras_backend
 
 from few_shot.data.car_data_loader import get_car_data, car_generator
 from few_shot.data.omniglot_data_loader import omni_data_generator
@@ -93,11 +93,11 @@ def train(dataset, image_shape, batch_size):
         num_training_samples = 450
         num_validation_samples = 300
 
-    encoder = 'resnet'
-    model_name = '{}_{}_pretrained_augmentation'.format(dataset, encoder)
+    encoder = 'lenet'
+    model_name = '{}_{}_l1_normalized'.format(dataset, encoder)
     model = get_siamese_model(image_shape, encoder=encoder, weights='imagenet')
 
-    wandb.init(name=model_name, project='few_shot')
+    wandb.init(name=model_name, project='anomalies')
     callbacks = [
         ReduceLROnPlateau(monitor='val_loss',
                           factor=0.5,
@@ -123,7 +123,7 @@ def train(dataset, image_shape, batch_size):
 
     model.fit_generator(
         generator=training_generator,
-        steps_per_epoch=int(num_training_samples // batch_size),
+        steps_per_epoch=int(num_training_samples // batch_size) * 10,
         epochs=350,
         verbose=1,
         callbacks=callbacks,
@@ -136,5 +136,5 @@ def train(dataset, image_shape, batch_size):
 
 if __name__ == '__main__':
     # train('mnist', (64, 64, 3), 64)
-    # train('omniglot', OMNIGLOT_SHAPE, 48)
-    train('cars', CAR_SHAPE, CAR_BATCH_SIZE)
+    train('omniglot', OMNIGLOT_SHAPE, 48)
+    # train('cars', CAR_SHAPE, CAR_BATCH_SIZE)

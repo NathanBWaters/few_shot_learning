@@ -1,7 +1,7 @@
 '''
 Helpful utility functions
 '''
-from keras import backend as keras_backend
+from tensorflow.keras import backend as keras_backend
 
 
 def recall(y_true, y_pred):

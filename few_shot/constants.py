@@ -9,5 +9,5 @@ DATA_DIR = os.path.join(os.path.dirname(CWD), 'datasets')
 
 OMNIGLOT_SHAPE = (32, 32, 3)
 
-CAR_SHAPE = (64, 64, 3)
+CAR_SHAPE = (139, 139, 3)
 CAR_BATCH_SIZE = 32
