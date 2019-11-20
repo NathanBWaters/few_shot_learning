@@ -6,7 +6,7 @@ import cv2
 import pickle
 from sklearn.utils import shuffle
 from PIL import Image
-import imgaug.augmenters as iaa
+# import imgaug.augmenters as iaa
 
 OMNIGLOT_FILE = 'omniglot.p'
 
@@ -15,11 +15,7 @@ def resize_omni(image, image_shape):
     '''
     Resizes an mnist image so it will work with a pre-trained network
     '''
-    try:
-        return np.array(Image.fromarray(image).resize((image_shape[0], image_shape[1])))
-    except ValueError as e:
-        import pdb; pdb.set_trace()
-        print('hmm')
+    return np.array(Image.fromarray(image).resize((image_shape[0], image_shape[1])))
 
 
 def augment_pair(image_a, image_b):

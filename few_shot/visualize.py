@@ -4,18 +4,17 @@ Helps visualize the data being fed to the models
 import streamlit as st
 import numpy as np
 
-from few_shot.train import OMNIGLOT_SHAPE
+from few_shot.constants import OMNIGLOT_SHAPE, CAR_SHAPE, CAR_BATCH_SIZE
+from few_shot.data.omniglot_data_loader import omni_data_generator
 from few_shot.data.car_data_loader import get_car_generators
 from few_shot.models.siamese_model import get_siamese_model
 
 
-def render_page(model=None):
+def render_page(generator, model=None):
     '''
     Renders the visualization page
     '''
     st.title('Visualizing Data Input')
-
-    generator = get_car_generators()
 
     # simply visualize one batch and make sure everything is working properly
     for batch in generator:
@@ -50,10 +49,18 @@ def render_page(model=None):
 
 
 if __name__ == '__main__':
-    if False:
-        model = get_siamese_model(OMNIGLOT_SHAPE, encoder='lenet')
-        model.load_weights(
-            './model_checkpoints/omniglot_adam_3.0e-4_switch_label_95.h5')
-        render_page(model)
+    dataset = 'cars'
+    model = None
 
-    render_page()
+    if dataset == 'omniglot':
+        if False:
+            model = get_siamese_model(OMNIGLOT_SHAPE, encoder='lenet')
+            model.load_weights(
+                './model_checkpoints/omniglot_adam_3.0e-4_switch_label_95.h5')
+
+        generator = omni_data_generator()
+        render_page(generator, model)
+
+    if dataset == 'cars':
+        train, _, _ = get_car_generators(CAR_BATCH_SIZE, (245, 256, 3))
+        render_page(train, model)

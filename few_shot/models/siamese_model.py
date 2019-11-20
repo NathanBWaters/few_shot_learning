@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import keras.backend as keras_backend
 from keras.applications import DenseNet121
+from tensorflow.keras.applications.resnet50 import ResNet50
 from keras.models import Model
 from keras.layers import (
     Dense,
@@ -27,13 +28,26 @@ def euclidean_distance(vects):
         keras_backend.maximum(sum_square, keras_backend.epsilon()))
 
 
-def get_dense_encoder(input_shape):
+def get_dense_encoder(input_shape, weights):
     '''
     Return the Dense architecture to represent the siamese branch
     '''
-    model = DenseNet121(input_shape=input_shape, include_top=False)
+    model = DenseNet121(weights=weights, input_shape=input_shape, include_top=False)
     for layer in model.layers:
         layer.trainable = True
+    return model
+
+
+def get_resnet_encoder(input_shape, weights):
+    '''
+    Return the Dense architecture to represent the siamese branch
+    '''
+    if not weights:
+        print('NOT using weights')
+    model = ResNet50(weights=weights, input_shape=input_shape, include_top=False)
+    for i, layer in enumerate(model.layers):
+        if i < 19:
+            layer.trainable = False
     return model
 
 
@@ -101,7 +115,7 @@ def get_lenet_encoder(input_shape):
     return Model(input=input_layer, outputs=x)
 
 
-def get_siamese_model(input_shape, encoder='dense'):
+def get_siamese_model(input_shape, encoder='dense', weights=None):
     '''
     Returns the CNN model
     '''
@@ -114,7 +128,9 @@ def get_siamese_model(input_shape, encoder='dense'):
     if encoder == 'lenet':
         shared_cnn_encoder = get_lenet_encoder(input_shape)
     elif encoder == 'dense':
-        shared_cnn_encoder = get_dense_encoder(input_shape)
+        shared_cnn_encoder = get_dense_encoder(input_shape, weights=weights)
+    elif encoder == 'resnet':
+        shared_cnn_encoder = get_resnet_encoder(input_shape, weights=weights)
     else:
         raise Exception('Failed to specify a valid encoder with: {}'
                         .format(encoder))
