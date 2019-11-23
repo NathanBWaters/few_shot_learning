@@ -124,7 +124,7 @@ def get_lenet_encoder(input_shape):
     return Model(inputs=input_layer, outputs=x)
 
 
-def get_siamese_model(input_shape, encoder='dense', weights=None):
+def get_siamese_model(input_shape, encoder='lenet', weights=None):
     '''
     Returns the CNN model
     '''
