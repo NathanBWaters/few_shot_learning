@@ -89,7 +89,7 @@ python-dateutil==2.8.0
 python-engineio==3.9.3
 python-socketio==4.3.1
 pytz==2019.3
-PyYAML==5.1.2
+PyYAML==5.4
 pyzmq==18.1.0
 requests==2.22.0
 Rx==1.6.1
