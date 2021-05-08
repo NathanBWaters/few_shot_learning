@@ -24,7 +24,7 @@ dnspython==1.16.0
 docker-pycreds==0.4.0
 entrypoints==0.3
 enum-compat==0.0.3
-eventlet==0.25.0
+eventlet==0.31.0
 -e git+https://github.com/NathanBWaters/few_shot_learning@c8666d63f054f85a2b10336e8dfb3b6614c89957#egg=few_shot
 Flask==1.1.1
 future==0.17.1
